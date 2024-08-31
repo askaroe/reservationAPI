@@ -1,0 +1,95 @@
+definitions:
+  models.Reservation:
+    properties:
+      createdAt:
+        type: string
+      endDate:
+        type: string
+      id:
+        type: string
+      roomId:
+        type: string
+      startDate:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.ReservationDto:
+    properties:
+      endDate:
+        type: string
+      roomId:
+        type: string
+      startDate:
+        type: string
+    type: object
+  response.Object:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+  description: This is a simple API for room reservation
+  title: Reservation API
+  version: "1.0"
+paths:
+  /reservations:
+    post:
+      consumes:
+      - application/json
+      description: Create a new reservation for a room
+      parameters:
+      - description: Reservation details
+        in: body
+        name: reservation
+        required: true
+        schema:
+          $ref: '#/definitions/models.ReservationDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Reservation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Object'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.Object'
+      summary: Create a new reservation
+      tags:
+      - reservations
+  /reservations/room/{roomID}:
+    get:
+      description: Create a new reservation for a room
+      parameters:
+      - description: Room ID
+        in: path
+        name: roomID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Reservation'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Object'
+      summary: Gets a list of reservations
+      tags:
+      - reservations
+swagger: "2.0"

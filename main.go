@@ -1,15 +1,21 @@
 package main
 
 import (
+	_ "github.com/askaroe/reservationAPI/docs"
 	"github.com/askaroe/reservationAPI/internal/handlers"
 	"github.com/askaroe/reservationAPI/internal/initializers"
 	"github.com/askaroe/reservationAPI/internal/repository"
 	"github.com/askaroe/reservationAPI/internal/server"
 	"github.com/askaroe/reservationAPI/internal/services"
 	"github.com/askaroe/reservationAPI/pkg/jsonlog"
-	"github.com/go-chi/chi/v5"
+	"github.com/askaroe/reservationAPI/pkg/router"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"os"
 )
+
+// @title Reservation API
+// @version 1.0
+// @description This is a simple API for room reservation
 
 var logger *jsonlog.Logger
 
@@ -42,9 +48,12 @@ func main() {
 	reservationHandler := handlers.NewReservationHandler(reservationService)
 
 	// init router
-	r := chi.NewRouter()
+	r := router.NewRouter()
 	r.Post("/reservations", reservationHandler.CreateReservation)
 	r.Get("/reservations/room/{roomID}", reservationHandler.GetReservationsByRoomId)
+
+	// init swagger
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	srv := server.NewServer(r, logger)
 	srv.Start()
