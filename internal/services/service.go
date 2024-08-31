@@ -8,8 +8,8 @@ import (
 )
 
 type ReservationService interface {
-	GetReservationsByRoomID(ctx context.Context, roomID int) ([]models.Reservation, error)
-	CreateReservation(ctx context.Context, reservation models.Reservation) error
+	GetReservationsByRoomID(ctx context.Context, roomID string) ([]models.Reservation, error)
+	CreateReservation(ctx context.Context, reservation models.ReservationDto) (models.Reservation, error)
 }
 
 type reservationService struct {
@@ -20,7 +20,7 @@ func NewReservationService(repo repository.ReservationRepository) ReservationSer
 	return &reservationService{repo: repo}
 }
 
-func (s *reservationService) GetReservationsByRoomID(ctx context.Context, roomID int) ([]models.Reservation, error) {
+func (s *reservationService) GetReservationsByRoomID(ctx context.Context, roomID string) ([]models.Reservation, error) {
 	reservations, err := s.repo.GetByRoomID(ctx, roomID)
 
 	if err != nil {
@@ -30,23 +30,29 @@ func (s *reservationService) GetReservationsByRoomID(ctx context.Context, roomID
 	return reservations, nil
 }
 
-func (s *reservationService) CreateReservation(ctx context.Context, reservation models.Reservation) error {
-	existingReservations, err := s.repo.GetByRoomID(ctx, reservation.RoomID)
-
+func (s *reservationService) CreateReservation(ctx context.Context, reservationDto models.ReservationDto) (models.Reservation, error) {
+	existingReservations, err := s.repo.GetByRoomID(ctx, reservationDto.RoomID)
 	if err != nil {
-		return fmt.Errorf("failed to check existing reservations: %w", err)
+		return models.Reservation{}, fmt.Errorf("failed to check existing reservations: %w", err)
 	}
 
 	for _, res := range existingReservations {
-		if (reservation.StartDate >= res.StartDate && reservation.StartDate < res.EndDate) || // Overlaps with existing reservation
-			(reservation.EndDate > res.StartDate && reservation.EndDate <= res.EndDate) { // Overlaps with existing reservation
-			return fmt.Errorf("room is already booked for the selected dates")
+		if (reservationDto.StartDate.After(res.StartDate) || reservationDto.StartDate.Equal(res.StartDate)) && reservationDto.StartDate.Before(res.EndDate) ||
+			(reservationDto.EndDate.After(res.StartDate) && (reservationDto.EndDate.Before(res.EndDate) || reservationDto.EndDate.Equal(res.EndDate))) {
+			return models.Reservation{}, fmt.Errorf("room is already booked for the selected dates")
 		}
 	}
 
-	if err := s.repo.Create(ctx, reservation); err != nil {
-		return fmt.Errorf("failed to create reservation: %w", err)
+	reservation := models.Reservation{
+		RoomID:    reservationDto.RoomID,
+		StartDate: reservationDto.StartDate,
+		EndDate:   reservationDto.EndDate,
 	}
 
-	return nil
+	createdReservation, err := s.repo.Create(ctx, reservation)
+	if err != nil {
+		return models.Reservation{}, fmt.Errorf("failed to create reservation: %w", err)
+	}
+
+	return createdReservation, nil
 }

@@ -56,3 +56,19 @@ func InternalServerError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 	render.JSON(w, r, v)
 }
+
+func Conflict(w http.ResponseWriter, r *http.Request, err error) {
+	render.Status(r, http.StatusConflict)
+
+	v := Object{
+		Success: false,
+		Message: err.Error(),
+	}
+
+	render.JSON(w, r, v)
+}
+
+func Created(w http.ResponseWriter, r *http.Request, data any) {
+	render.Status(r, http.StatusCreated)
+	render.JSON(w, r, data)
+}

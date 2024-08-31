@@ -7,7 +7,6 @@ import (
 	"github.com/askaroe/reservationAPI/pkg/response"
 	"github.com/go-chi/chi/v5"
 	"net/http"
-	"strconv"
 )
 
 type ReservationHandler struct {
@@ -19,15 +18,9 @@ func NewReservationHandler(service services.ReservationService) *ReservationHand
 }
 
 func (h *ReservationHandler) GetReservationsByRoomId(w http.ResponseWriter, r *http.Request) {
-	roomIdStr := chi.URLParam(r, "roomID")
-	roomID, err := strconv.Atoi(roomIdStr)
+	roomId := chi.URLParam(r, "roomID")
 
-	if err != nil {
-		response.BadRequest(w, r, err, nil)
-		return
-	}
-
-	reservations, err := h.s.GetReservationsByRoomID(r.Context(), roomID)
+	reservations, err := h.s.GetReservationsByRoomID(r.Context(), roomId)
 	if err != nil {
 		response.InternalServerError(w, r, err)
 		return
@@ -37,9 +30,18 @@ func (h *ReservationHandler) GetReservationsByRoomId(w http.ResponseWriter, r *h
 }
 
 func (h *ReservationHandler) CreateReservation(w http.ResponseWriter, r *http.Request) {
-	var reservation models.Reservation
+	var reservationDto models.ReservationDto
 
-	if err := json.NewDecoder(r.Body).Decode(&reservation); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&reservationDto); err != nil {
 		response.BadRequest(w, r, err, "invalid request")
+		return
 	}
+
+	createdReservation, err := h.s.CreateReservation(r.Context(), reservationDto)
+	if err != nil {
+		response.Conflict(w, r, err)
+		return
+	}
+
+	response.Created(w, r, createdReservation)
 }
