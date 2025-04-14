@@ -3,11 +3,11 @@ package server
 import (
 	"context"
 	"errors"
-	"github.com/askaroe/reservationAPI/pkg/jsonlog"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"os"
 	"os/signal"
+	"reservationAPI/pkg/jsonlog"
 	"syscall"
 	"time"
 )

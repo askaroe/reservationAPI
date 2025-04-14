@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/askaroe/reservationAPI/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"reservationAPI/internal/models"
 )
 
 type ReservationRepository interface {

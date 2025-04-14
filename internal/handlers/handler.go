@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/askaroe/reservationAPI/internal/models"
-	"github.com/askaroe/reservationAPI/internal/services"
-	"github.com/askaroe/reservationAPI/pkg/response"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"reservationAPI/internal/models"
+	"reservationAPI/internal/services"
+	"reservationAPI/pkg/response"
 )
 
 type ReservationHandler struct {

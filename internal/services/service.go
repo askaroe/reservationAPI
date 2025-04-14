@@ -3,8 +3,9 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/askaroe/reservationAPI/internal/models"
-	"github.com/askaroe/reservationAPI/internal/repository"
+	"reservationAPI/internal/models"
+	"reservationAPI/internal/repository"
+	"reservationAPI/pkg/jsonlog"
 )
 
 type ReservationService interface {
@@ -13,17 +14,21 @@ type ReservationService interface {
 }
 
 type reservationService struct {
-	repo repository.ReservationRepository
+	repo   repository.ReservationRepository
+	logger *jsonlog.Logger
 }
 
-func NewReservationService(repo repository.ReservationRepository) ReservationService {
-	return &reservationService{repo: repo}
+func NewReservationService(repo repository.ReservationRepository, logger *jsonlog.Logger) ReservationService {
+	return &reservationService{repo: repo, logger: logger}
 }
 
 func (s *reservationService) GetReservationsByRoomID(ctx context.Context, roomID string) ([]models.Reservation, error) {
 	reservations, err := s.repo.GetByRoomID(ctx, roomID)
 
 	if err != nil {
+
+		s.logger.PrintError(err, nil)
+
 		return nil, fmt.Errorf("failed to get reservations from repository: %w", err)
 	}
 
@@ -39,6 +44,7 @@ func (s *reservationService) CreateReservation(ctx context.Context, reservationD
 	for _, res := range existingReservations {
 		if (reservationDto.StartDate.After(res.StartDate) || reservationDto.StartDate.Equal(res.StartDate)) && reservationDto.StartDate.Before(res.EndDate) ||
 			(reservationDto.EndDate.After(res.StartDate) && (reservationDto.EndDate.Before(res.EndDate) || reservationDto.EndDate.Equal(res.EndDate))) {
+			s.logger.PrintError(err, nil)
 			return models.Reservation{}, fmt.Errorf("room is already booked for the selected dates")
 		}
 	}
@@ -51,6 +57,7 @@ func (s *reservationService) CreateReservation(ctx context.Context, reservationD
 
 	createdReservation, err := s.repo.Create(ctx, reservation)
 	if err != nil {
+		s.logger.PrintError(err, nil)
 		return models.Reservation{}, fmt.Errorf("failed to create reservation: %w", err)
 	}
 

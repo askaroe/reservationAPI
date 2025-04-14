@@ -1,4 +1,4 @@
-module github.com/askaroe/reservationAPI
+module reservationAPI
 
 go 1.21
 

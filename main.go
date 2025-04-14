@@ -1,16 +1,16 @@
 package main
 
 import (
-	_ "github.com/askaroe/reservationAPI/docs"
-	"github.com/askaroe/reservationAPI/internal/handlers"
-	"github.com/askaroe/reservationAPI/internal/initializers"
-	"github.com/askaroe/reservationAPI/internal/repository"
-	"github.com/askaroe/reservationAPI/internal/server"
-	"github.com/askaroe/reservationAPI/internal/services"
-	"github.com/askaroe/reservationAPI/pkg/jsonlog"
-	"github.com/askaroe/reservationAPI/pkg/router"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"os"
+	_ "reservationAPI/docs"
+	"reservationAPI/internal/handlers"
+	"reservationAPI/internal/initializers"
+	"reservationAPI/internal/repository"
+	"reservationAPI/internal/server"
+	"reservationAPI/internal/services"
+	"reservationAPI/pkg/jsonlog"
+	"reservationAPI/pkg/router"
 )
 
 // @title Reservation API
@@ -42,7 +42,7 @@ func main() {
 	repo := repository.NewReservationRepository(db)
 
 	// init service
-	reservationService := services.NewReservationService(repo)
+	reservationService := services.NewReservationService(repo, logger)
 
 	// init handler
 	reservationHandler := handlers.NewReservationHandler(reservationService)
